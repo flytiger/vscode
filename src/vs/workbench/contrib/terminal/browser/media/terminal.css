@@ -67,6 +67,10 @@
 	top: auto;
 }
 
+.monaco-workbench .panel.integrated-terminal .xterm-rows{
+	background-color: transparent;
+}
+
 .monaco-workbench .panel.integrated-terminal {
 	font-variant-ligatures: none;
 }

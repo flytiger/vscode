@@ -8,9 +8,9 @@ import { systemPreferences, ipcMain as ipc } from 'electron';
 import { IStateService } from 'vs/platform/state/common/state';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-const DEFAULT_BG_LIGHT = '#FFFFFF';
-const DEFAULT_BG_DARK = '#1E1E1E';
-const DEFAULT_BG_HC_BLACK = '#000000';
+const DEFAULT_BG_LIGHT = '#01FFFFFF';
+const DEFAULT_BG_DARK = '#011E1E1E';
+const DEFAULT_BG_HC_BLACK = '#01000000';
 
 const THEME_STORAGE_KEY = 'theme';
 const THEME_BG_STORAGE_KEY = 'themeBackground';
@@ -60,6 +60,10 @@ export class ThemeMainService implements IThemeMainService {
 
 		if (isMacintosh && background.toUpperCase() === DEFAULT_BG_DARK) {
 			background = '#171717'; // https://github.com/electron/electron/issues/5150
+		}
+
+		if (background.length == 7 && background[0] == "#") {
+			background = "#01" + background.split("#")[1];
 		}
 
 		return background;

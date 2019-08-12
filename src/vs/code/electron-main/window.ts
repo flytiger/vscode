@@ -51,7 +51,7 @@ interface ITouchBarSegment extends Electron.SegmentedControlSegment {
 export class CodeWindow extends Disposable implements ICodeWindow {
 
 	private static readonly MIN_WIDTH = 200;
-	private static readonly MIN_HEIGHT = 120;
+	private static readonly MIN_HEIGHT = 160;
 
 	private static readonly MAX_URL_LENGTH = 2 * 1024 * 1024; // https://cs.chromium.org/chromium/src/url/url_constants.cc?l=32
 
@@ -91,20 +91,20 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 		this._readyState = ReadyState.NONE;
 		this.whenReadyCallbacks = [];
 
-		// create browser window
-		this.createBrowserWindow(config);
+			// create browser window
+			this.createBrowserWindow(config);
 
-		// respect configured menu bar visibility
-		this.onConfigurationUpdated();
+			// respect configured menu bar visibility
+			this.onConfigurationUpdated();
 
-		// macOS: touch bar support
-		this.createTouchBar();
+			// macOS: touch bar support
+			this.createTouchBar();
 
-		// Request handling
-		this.handleMarketplaceRequests();
+			// Request handling
+			this.handleMarketplaceRequests();
 
-		// Eventing
-		this.registerListeners();
+			// Eventing
+			this.registerListeners();
 	}
 
 	private createBrowserWindow(config: IWindowCreationOptions): void {
@@ -117,8 +117,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 		const isFullscreenOrMaximized = (this.windowState.mode === WindowMode.Maximized || this.windowState.mode === WindowMode.Fullscreen);
 
 		const options: Electron.BrowserWindowConstructorOptions = {
-			width: this.windowState.width,
-			height: this.windowState.height,
+			width: 160,
+			height: 160,
 			x: this.windowState.x,
 			y: this.windowState.y,
 			backgroundColor: this.themeMainService.getBackgroundColor(),
@@ -126,6 +126,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 			minHeight: CodeWindow.MIN_HEIGHT,
 			show: !isFullscreenOrMaximized,
 			title: product.nameLong,
+			transparent: true,
 			webPreferences: {
 				// By default if Code is in the background, intervals and timeouts get throttled, so we
 				// want to enforce that Code stays in the foreground. This triggers a disable_hidden_
@@ -195,6 +196,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 				});
 			}
 		}
+		this._win.setBounds({
+			width: this.windowState.width || defaultWindowState().width!,
+			height: this.windowState.height || defaultWindowState().height!,
+			x: this.windowState.x || 0,
+			y: this.windowState.y || 0
+		});
 
 		if (isFullscreenOrMaximized) {
 			this._win.maximize();
@@ -359,6 +366,17 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 				this.currentConfig = this.pendingLoadConfig;
 
 				this.pendingLoadConfig = undefined;
+			}
+
+			// To prevent flashing, we set the window visible after the page has finished to load but before Code is loaded
+			if (this._win && !this._win.isVisible()) {
+				if (this.windowState.mode === WindowMode.Maximized) {
+					this._win.maximize();
+				}
+
+				if (!this._win.isVisible()) { // maximize also makes visible
+					this._win.show();
+				}
 			}
 		});
 

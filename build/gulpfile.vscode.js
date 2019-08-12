@@ -189,7 +189,8 @@ function getElectron(arch) {
 			platform: process.platform,
 			arch,
 			ffmpegChromium: true,
-			keepDefaultApp: true
+			keepDefaultApp: true,
+			enableTransparentVisuals: true
 		});
 
 		return gulp.src('package.json')
@@ -365,15 +366,12 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
 			.pipe(electron(_.extend({}, config, { platform, arch, ffmpegChromium: true })))
 			.pipe(filter(['**', '!LICENSE', '!LICENSES.chromium.html', '!version'], { dot: true }));
 
-		if (platform === 'linux') {
 			result = es.merge(result, gulp.src('resources/completions/bash/code', { base: '.' })
 				.pipe(replace('@@APPNAME@@', product.applicationName))
 				.pipe(rename(function (f) { f.basename = product.applicationName; })));
-
 			result = es.merge(result, gulp.src('resources/completions/zsh/_code', { base: '.' })
 				.pipe(replace('@@APPNAME@@', product.applicationName))
 				.pipe(rename(function (f) { f.basename = '_' + product.applicationName; })));
-		}
 
 		if (platform === 'win32') {
 			result = es.merge(result, gulp.src('resources/win32/bin/code.js', { base: 'resources/win32', allowEmpty: true }));
