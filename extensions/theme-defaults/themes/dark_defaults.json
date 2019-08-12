@@ -2,8 +2,8 @@
 	"$schema": "vscode://schemas/color-theme",
 	"name": "Dark Default Colors",
 	"colors": {
-		"editor.background": "#1E1E1E00",
-		"editor.foreground": "#D4D4D4",
+		"editor.background": "#00000040",
+		"editor.foreground": "#ffffff",
 		"editor.inactiveSelectionBackground": "#3A3D4188",
 		"editorIndentGuide.background": "#40404000",
 		"editorIndentGuide.activeBackground": "#70707000",

@@ -14,11 +14,11 @@ import { Color } from 'vs/base/common/color';
 export function WORKBENCH_BACKGROUND(theme: ITheme): Color {
 	switch (theme.type) {
 		case 'dark':
-			return Color.fromHex('#252526');
+			return Color.fromHex('#25252600');
 		case 'light':
-			return Color.fromHex('#F3F3F3');
+			return Color.fromHex('#F3F3F300');
 		default:
-			return Color.fromHex('#000000');
+			return Color.fromHex('#00000000');
 	}
 }
 
@@ -37,8 +37,8 @@ export const TAB_UNFOCUSED_ACTIVE_BACKGROUND = registerColor('tab.unfocusedActiv
 }, nls.localize('tabUnfocusedActiveBackground', "Active tab background color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."));
 
 export const TAB_INACTIVE_BACKGROUND = registerColor('tab.inactiveBackground', {
-	dark: '#2D2D2D',
-	light: '#ECECEC',
+	dark: '#2D2D2D00',
+	light: '#ECECEC00',
 	hc: null
 }, nls.localize('tabInactiveBackground', "Inactive tab background color. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."));
 
@@ -55,8 +55,8 @@ export const TAB_UNFOCUSED_HOVER_BACKGROUND = registerColor('tab.unfocusedHoverB
 }, nls.localize('tabUnfocusedHoverBackground', "Tab background color in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."));
 
 export const TAB_BORDER = registerColor('tab.border', {
-	dark: '#252526',
-	light: '#F3F3F3',
+	dark: '#ffffff40',
+	light: '#00000040',
 	hc: contrastBorder
 }, nls.localize('tabBorder', "Border to separate tabs from each other. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."));
 
@@ -171,8 +171,8 @@ export const EDITOR_GROUP_FOCUSED_EMPTY_BORDER = registerColor('editorGroup.focu
 }, nls.localize('editorGroupFocusedEmptyBorder', "Border color of an empty editor group that is focused. Editor groups are the containers of editors."));
 
 export const EDITOR_GROUP_HEADER_TABS_BACKGROUND = registerColor('editorGroupHeader.tabsBackground', {
-	dark: '#252526',
-	light: '#F3F3F3',
+	dark: '#00000077',
+	light: '#ffffff77',
 	hc: null
 }, nls.localize('tabsContainerBackground', "Background color of the editor group title header when tabs are enabled. Editor groups are the containers of editors."));
 
@@ -267,14 +267,14 @@ export const STATUS_BAR_NO_FOLDER_FOREGROUND = registerColor('statusBar.noFolder
 }, nls.localize('statusBarNoFolderForeground', "Status bar foreground color when no folder is opened. The status bar is shown in the bottom of the window."));
 
 export const STATUS_BAR_BACKGROUND = registerColor('statusBar.background', {
-	dark: '#007ACC',
-	light: '#007ACC',
+	dark: '#007ACC80',
+	light: '#007ACC80',
 	hc: null
 }, nls.localize('statusBarBackground', "Status bar background color when a workspace is opened. The status bar is shown in the bottom of the window."));
 
 export const STATUS_BAR_NO_FOLDER_BACKGROUND = registerColor('statusBar.noFolderBackground', {
-	dark: '#68217A',
-	light: '#68217A',
+	dark: '#68217A80',
+	light: '#68217A80',
 	hc: null
 }, nls.localize('statusBarNoFolderBackground', "Status bar background color when no folder is opened. The status bar is shown in the bottom of the window."));
 
@@ -323,9 +323,9 @@ export const STATUS_BAR_PROMINENT_ITEM_HOVER_BACKGROUND = registerColor('statusB
 // < --- Activity Bar --- >
 
 export const ACTIVITY_BAR_BACKGROUND = registerColor('activityBar.background', {
-	dark: '#333333',
-	light: '#2C2C2C',
-	hc: '#000000'
+	dark: '#00000099',
+	light: '#FFFFFF99',
+	hc: '#00000099'
 }, nls.localize('activityBarBackground', "Activity bar background color. The activity bar is showing on the far left or right and allows to switch between views of the side bar."));
 
 export const ACTIVITY_BAR_FOREGROUND = registerColor('activityBar.foreground', {
@@ -395,9 +395,9 @@ export const EXTENSION_BADGE_REMOTE_FOREGROUND = registerColor('extensionBadge.r
 // < --- Side Bar --- >
 
 export const SIDE_BAR_BACKGROUND = registerColor('sideBar.background', {
-	dark: '#252526',
-	light: '#F3F3F3',
-	hc: '#000000'
+	dark: '#00000099',
+	light: '#FFFFFF99',
+	hc: '#00000099'
 }, nls.localize('sideBarBackground', "Side bar background color. The side bar is the container for views like explorer and search."));
 
 export const SIDE_BAR_FOREGROUND = registerColor('sideBar.foreground', {
@@ -472,14 +472,14 @@ export const TITLE_BAR_INACTIVE_FOREGROUND = registerColor('titleBar.inactiveFor
 }, nls.localize('titleBarInactiveForeground', "Title bar foreground when the window is inactive. Note that this color is currently only supported on macOS."));
 
 export const TITLE_BAR_ACTIVE_BACKGROUND = registerColor('titleBar.activeBackground', {
-	dark: '#3C3C3C',
-	light: '#DDDDDD',
-	hc: '#000000'
+	dark: '#00000099',
+	light: '#ffffff99',
+	hc: '#00000099'
 }, nls.localize('titleBarActiveBackground', "Title bar background when the window is active. Note that this color is currently only supported on macOS."));
 
 export const TITLE_BAR_INACTIVE_BACKGROUND = registerColor('titleBar.inactiveBackground', {
-	dark: transparent(TITLE_BAR_ACTIVE_BACKGROUND, 0.6),
-	light: transparent(TITLE_BAR_ACTIVE_BACKGROUND, 0.6),
+	dark: transparent(TITLE_BAR_ACTIVE_BACKGROUND, 1),
+	light: transparent(TITLE_BAR_ACTIVE_BACKGROUND, 1),
 	hc: null
 }, nls.localize('titleBarInactiveBackground', "Title bar background when the window is inactive. Note that this color is currently only supported on macOS."));
 

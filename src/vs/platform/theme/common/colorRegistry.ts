@@ -287,7 +287,7 @@ export const editorHintBorder = registerColor('editorHint.border', { dark: null,
  * Because of bug https://monacotools.visualstudio.com/DefaultCollection/Monaco/_workitems/edit/13254
  * we are *not* using the color white (or #ffffff, rgba(255,255,255)) but something very close to white.
  */
-export const editorBackground = registerColor('editor.background', { light: '#fffffe00', dark: '#1E1E1E00', hc: Color.black }, nls.localize('editorBackground', "Editor background color."));
+export const editorBackground = registerColor('editor.background', { light: '#ffffff20', dark: '#00000020', hc: Color.black }, nls.localize('editorBackground', "Editor background color."));
 
 /**
  * Editor foreground color.

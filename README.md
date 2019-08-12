@@ -1,4 +1,26 @@
-# Visual Studio Code - Open Source ("Code - OSS")
+# *Transparent* Visual Studio Code - Open Source ("Code - OSS")
+
+The goal of this fork is to make a version of vscode that can have fully working window transparency and nice effects to go with that.
+
+So far
+--
+1. Added transparent window flag.
+2. Updated some packaged themes to be transparent.
+3. Terminal transparency
+
+
+Todo
+--
+1. Make transparency a setting.
+2. Make themes transparent on the fly.
+
+Themes that have been converted:
+--
+- dark vs, dark plus
+- monokai
+
+Old Readme
+==
 
 <!-- [![Build Status](https://dev.azure.com/vscode/VSCode/_apis/build/status/VS%20Code?branchName=master)](https://aka.ms/vscode-builds) -->
 [![Build Status](https://dev.azure.com/vscode/VSCode/_apis/build/status/VS%20Code?branchName=master)](https://dev.azure.com/vscode/VSCode/_build/latest?definitionId=12)
