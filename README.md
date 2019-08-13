@@ -2,20 +2,27 @@
 
 The goal of this fork is to make a version of vscode that can have fully working window transparency and nice effects to go with that.
 
-So far
---
-1. Added transparent window flag.
-2. Updated some packaged themes to be transparent.
-3. Terminal transparency
+## Building And Running
+[If the instructions below fail](https://github.com/Microsoft/vscode/wiki/How-to-Contribute#build-and-run)
+
+### Build
+1. navigate to the project `cd vscode`
+2. install dependencies with `yarn`
+3. build project: `yarn watch`
+
+### Running
+- Linux / macOS: `./scripts/code.sh`
+- Windows: `.\scripts\code.bat`
+
+## Packaging
+vscode can be packaged for: `win32-ia32 | win32-x64 | darwin | linux-ia32 | linux-x64 | linux-arm`
+- `gulp` is used to package
+	- `vscode-[platform]`: Builds a packaged version for [platform]
+  - `vscode-[platform]-min`: Builds a packaged and minified version for [platform]
+- [Microsoft Documentation for Cross Compiling Debian Based Linux](https://github.com/Microsoft/vscode/wiki/Cross-Compiling-for-Debian-Based-Linux)
 
 
-Todo
---
-1. Make transparency a setting.
-2. Make themes transparent on the fly.
-
-Themes that have been converted:
---
+## Current Transparent Themes
 - dark vs, dark plus
 - monokai
 
