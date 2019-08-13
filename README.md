@@ -17,9 +17,14 @@ The goal of this fork is to make a version of vscode that can have fully working
 ## Packaging
 vscode can be packaged for: `win32-ia32 | win32-x64 | darwin | linux-ia32 | linux-x64 | linux-arm`
 - `gulp` is used to package
-	- `vscode-[platform]`: Builds a packaged version for [platform]
+  - `vscode-[platform]`: Builds a packaged version for [platform]
   - `vscode-[platform]-min`: Builds a packaged and minified version for [platform]
+    - Note: may need to add `--max-old-space-size=6500` to limit the memory used in packaging, my computer crashed a few times trying to package without that flag
+
 - [Microsoft Documentation for Cross Compiling Debian Based Linux](https://github.com/Microsoft/vscode/wiki/Cross-Compiling-for-Debian-Based-Linux)
+
+Example: Packaging for Arch Linux:
+- `vscode-linux-x64-min`
 
 
 ## Current Transparent Themes
