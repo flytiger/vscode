@@ -380,7 +380,6 @@ export class WindowsManager extends Disposable implements IWindowsMainService {
 	}
 
 	open(openConfig: IOpenConfiguration): ICodeWindow[] {
-		setTimeout(() => {
 		this.logService.trace('windowsManager#open');
 		openConfig = this.validateOpenConfig(openConfig);
 
@@ -512,8 +511,7 @@ export class WindowsManager extends Disposable implements IWindowsMainService {
 		if (openConfig.context === OpenContext.CLI && waitMarkerFileURI && usedWindows.length === 1 && usedWindows[0]) {
 			this.waitForWindowCloseOrLoad(usedWindows[0].id).then(() => fs.unlink(waitMarkerFileURI.fsPath, _error => undefined));
 		}
-		}, 100);
-		return [];
+		return usedWindows;
 	}
 
 	private validateOpenConfig(config: IOpenConfiguration): IOpenConfiguration {

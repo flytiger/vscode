@@ -91,20 +91,20 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 		this._readyState = ReadyState.NONE;
 		this.whenReadyCallbacks = [];
 
-			// create browser window
-			this.createBrowserWindow(config);
+		// create browser window
+		this.createBrowserWindow(config);
 
-			// respect configured menu bar visibility
-			this.onConfigurationUpdated();
+		// respect configured menu bar visibility
+		this.onConfigurationUpdated();
 
-			// macOS: touch bar support
-			this.createTouchBar();
+		// macOS: touch bar support
+		this.createTouchBar();
 
-			// Request handling
-			this.handleMarketplaceRequests();
+		// Request handling
+		this.handleMarketplaceRequests();
 
-			// Eventing
-			this.registerListeners();
+		// Eventing
+		this.registerListeners();
 	}
 
 	private createBrowserWindow(config: IWindowCreationOptions): void {
@@ -117,8 +117,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 		const isFullscreenOrMaximized = (this.windowState.mode === WindowMode.Maximized || this.windowState.mode === WindowMode.Fullscreen);
 
 		const options: Electron.BrowserWindowConstructorOptions = {
-			width: 160,
-			height: 160,
+			width: this.windowState.width,
+			height: this.windowState.height,
 			x: this.windowState.x,
 			y: this.windowState.y,
 			backgroundColor: this.themeMainService.getBackgroundColor(),

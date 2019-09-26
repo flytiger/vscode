@@ -2,7 +2,7 @@
 	"$schema": "vscode://schemas/color-theme",
 	"name": "Dark Default Colors",
 	"colors": {
-		"editor.background": "#00000040",
+		"editor.background": "#00000055",
 		"editor.foreground": "#ffffff",
 		"editor.inactiveSelectionBackground": "#3A3D4188",
 		"editorIndentGuide.background": "#40404000",
@@ -11,6 +11,7 @@
 		"editor.lineHighlightBorder": "#ffffff30",
 		"list.dropBackground": "#383B3D88",
 		"activityBarBadge.background": "#007ACC88",
+		"sideBar.background": "#1c1d1fef",
 		"sideBarTitle.foreground": "#BBBBBB",
 		"input.placeholderForeground": "#A6A6A6",
 		"settings.textInputBackground": "#29292988",
@@ -20,6 +21,6 @@
 		"statusBarItem.remoteForeground": "#FFF",
 		"statusBarItem.remoteBackground": "#16825D88",
 		"terminal.background": "#00000000",
-		"terminal.ansiBlack": "00000030"
+		"terminal.ansiBlack": "#00000030"
 	}
 }
