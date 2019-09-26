@@ -34,6 +34,36 @@ export interface IView {
 	setVisible?(visible: boolean): void;
 }
 
+export interface ISerializableView extends IView {
+	toJSON(): object;
+}
+
+export interface IViewDeserializer<T extends ISerializableView> {
+	fromJSON(json: any): T;
+}
+
+export interface ISerializedLeafNode {
+	type: 'leaf';
+	data: any;
+	size: number;
+	visible?: boolean;
+}
+
+export interface ISerializedBranchNode {
+	type: 'branch';
+	data: ISerializedNode[];
+	size: number;
+}
+
+export type ISerializedNode = ISerializedLeafNode | ISerializedBranchNode;
+
+export interface ISerializedGridView {
+	root: ISerializedNode;
+	orientation: Orientation;
+	width: number;
+	height: number;
+}
+
 export function orthogonal(orientation: Orientation): Orientation {
 	return orientation === Orientation.VERTICAL ? Orientation.HORIZONTAL : Orientation.VERTICAL;
 }
@@ -74,6 +104,11 @@ export interface ILayoutController {
 
 export class LayoutController implements ILayoutController {
 	constructor(public isLayoutEnabled: boolean) { }
+}
+
+export class MultiplexLayoutController implements ILayoutController {
+	get isLayoutEnabled(): boolean { return this.layoutControllers.every(l => l.isLayoutEnabled); }
+	constructor(private layoutControllers: ILayoutController[]) { }
 }
 
 export interface IGridViewOptions {
@@ -170,21 +205,56 @@ class BranchNode implements ISplitView, IDisposable {
 
 	constructor(
 		readonly orientation: Orientation,
+		readonly layoutController: ILayoutController,
 		styles: IGridViewStyles,
 		readonly proportionalLayout: boolean,
 		size: number = 0,
-		orthogonalSize: number = 0
+		orthogonalSize: number = 0,
+		childDescriptors?: INodeDescriptor[]
 	) {
 		this._styles = styles;
 		this._size = size;
 		this._orthogonalSize = orthogonalSize;
 
 		this.element = $('.monaco-grid-branch-node');
-		this.splitview = new SplitView(this.element, { orientation, styles, proportionalLayout });
-		this.splitview.layout(size);
+
+		if (!childDescriptors) {
+			// Normal behavior, we have no children yet, just set up the splitview
+			this.splitview = new SplitView(this.element, { orientation, styles, proportionalLayout });
+			this.splitview.layout(size, orthogonalSize);
+		} else {
+			// Reconstruction behavior, we want to reconstruct a splitview
+			const descriptor = {
+				views: childDescriptors.map(childDescriptor => {
+					return {
+						view: childDescriptor.node,
+						size: childDescriptor.node.size,
+						visible: childDescriptor.node instanceof LeafNode && childDescriptor.visible !== undefined ? childDescriptor.visible : true
+					};
+				}),
+				size: this.orthogonalSize
+			};
+
+			const options = { proportionalLayout, orientation, styles };
+
+			this.children = childDescriptors.map(c => c.node);
+			this.splitview = new SplitView(this.element, { ...options, descriptor });
+
+			this.children.forEach((node, index) => {
+				// Set up orthogonal sashes for children
+				node.orthogonalStartSash = this.splitview.sashes[index - 1];
+				node.orthogonalEndSash = this.splitview.sashes[index];
+			});
+		}
 
 		const onDidSashReset = Event.map(this.splitview.onDidSashReset, i => [i]);
 		this.splitviewSashResetDisposable = onDidSashReset(this._onDidSashReset.fire, this._onDidSashReset);
+
+		const onDidChildrenChange = Event.map(Event.any(...this.children.map(c => c.onDidChange)), () => undefined);
+		this.childrenChangeDisposable = onDidChildrenChange(this._onDidChange.fire, this._onDidChange);
+
+		const onDidChildrenSashReset = Event.any(...this.children.map((c, i) => Event.map(c.onDidSashReset, location => [i, ...location])));
+		this.childrenSashResetDisposable = onDidChildrenSashReset(this._onDidSashReset.fire, this._onDidSashReset);
 	}
 
 	style(styles: IGridViewStyles): void {
@@ -198,12 +268,20 @@ class BranchNode implements ISplitView, IDisposable {
 		}
 	}
 
-	layout(size: number): void {
+	layout(size: number, orthogonalSize: number | undefined): void {
+		if (!this.layoutController.isLayoutEnabled) {
+			return;
+		}
+
+		if (typeof orthogonalSize !== 'number') {
+			throw new Error('Invalid state');
+		}
+
+		// branch nodes should flip the normal/orthogonal directions
+		this._size = orthogonalSize;
 		this._orthogonalSize = size;
 
-		for (const child of this.children) {
-			child.orthogonalLayout(size);
-		}
+		this.splitview.layout(orthogonalSize, size);
 	}
 
 	setVisible(visible: boolean): void {
@@ -212,12 +290,7 @@ class BranchNode implements ISplitView, IDisposable {
 		}
 	}
 
-	orthogonalLayout(size: number): void {
-		this._size = size;
-		this.splitview.layout(size);
-	}
-
-	addChild(node: Node, size: number | Sizing, index: number): void {
+	addChild(node: Node, size: number | Sizing, index: number, skipLayout?: boolean): void {
 		if (index < 0 || index > this.children.length) {
 			throw new Error('Invalid index');
 		}
@@ -347,6 +420,10 @@ class BranchNode implements ISplitView, IDisposable {
 			throw new Error('Invalid index');
 		}
 
+		if (this.splitview.isViewVisible(index) === visible) {
+			return;
+		}
+
 		this.splitview.setViewVisible(index, visible);
 	}
 
@@ -470,9 +547,11 @@ class LeafNode implements ISplitView, IDisposable {
 		readonly view: IView,
 		readonly orientation: Orientation,
 		readonly layoutController: ILayoutController,
-		orthogonalSize: number
+		orthogonalSize: number,
+		size: number = 0
 	) {
 		this._orthogonalSize = orthogonalSize;
+		this._size = size;
 
 		this._onDidViewChange = Event.map(this.view.onDidChange, e => e && (this.orientation === Orientation.VERTICAL ? e.width : e.height));
 		this.onDidChange = Event.any(this._onDidViewChange, this._onDidSetLinkedNode.event, this._onDidLinkedWidthNodeChange.event, this._onDidLinkedHeightNodeChange.event);
@@ -538,12 +617,18 @@ class LeafNode implements ISplitView, IDisposable {
 		// noop
 	}
 
-	layout(size: number): void {
-		this._size = size;
-
-		if (this.layoutController.isLayoutEnabled) {
-			this.view.layout(this.width, this.height, orthogonal(this.orientation));
+	layout(size: number, orthogonalSize: number | undefined): void {
+		if (!this.layoutController.isLayoutEnabled) {
+			return;
 		}
+
+		if (typeof orthogonalSize !== 'number') {
+			throw new Error('Invalid state');
+		}
+
+		this._size = size;
+		this._orthogonalSize = orthogonalSize;
+		this.view.layout(this.width, this.height, orthogonal(this.orientation));
 	}
 
 	setVisible(visible: boolean): void {
@@ -552,22 +637,19 @@ class LeafNode implements ISplitView, IDisposable {
 		}
 	}
 
-	orthogonalLayout(size: number): void {
-		this._orthogonalSize = size;
-
-		if (this.layoutController.isLayoutEnabled) {
-			this.view.layout(this.width, this.height, orthogonal(this.orientation));
-		}
-	}
-
 	dispose(): void { }
 }
 
 type Node = BranchNode | LeafNode;
 
+export interface INodeDescriptor {
+	node: Node;
+	visible?: boolean;
+}
+
 function flipNode<T extends Node>(node: T, size: number, orthogonalSize: number): T {
 	if (node instanceof BranchNode) {
-		const result = new BranchNode(orthogonal(node.orientation), node.styles, node.proportionalLayout, size, orthogonalSize);
+		const result = new BranchNode(orthogonal(node.orientation), node.layoutController, node.styles, node.proportionalLayout, size, orthogonalSize);
 
 		let totalSize = 0;
 
@@ -588,7 +670,7 @@ function flipNode<T extends Node>(node: T, size: number, orthogonalSize: number)
 
 		return result as T;
 	} else {
-		return new LeafNode((node as LeafNode).view, orthogonal(node.orientation), (node as LeafNode).layoutController, orthogonalSize) as T;
+		return new LeafNode((node as LeafNode).view, orthogonal(node.orientation), node.layoutController, orthogonalSize) as T;
 	}
 }
 
@@ -633,8 +715,7 @@ export class GridView implements IDisposable {
 
 		const { size, orthogonalSize } = this._root;
 		this.root = flipNode(this._root, orthogonalSize, size);
-		this.root.layout(size);
-		this.root.orthogonalLayout(orthogonalSize);
+		this.root.layout(size, orthogonalSize);
 	}
 
 	get width(): number { return this.root.width; }
@@ -648,14 +729,37 @@ export class GridView implements IDisposable {
 	private _onDidChange = new Relay<IViewSize | undefined>();
 	readonly onDidChange = this._onDidChange.event;
 
+	/**
+	 * The first layout controller makes sure layout only propagates
+	 * to the views after the very first call to gridview.layout()
+	 */
+	private firstLayoutController: LayoutController;
 	private layoutController: LayoutController;
 
 	constructor(options: IGridViewOptions = {}) {
 		this.element = $('.monaco-grid-view');
 		this.styles = options.styles || defaultStyles;
 		this.proportionalLayout = typeof options.proportionalLayout !== 'undefined' ? !!options.proportionalLayout : true;
-		this.root = new BranchNode(Orientation.VERTICAL, this.styles, this.proportionalLayout);
-		this.layoutController = options.layoutController || new LayoutController(true);
+
+		this.firstLayoutController = new LayoutController(false);
+		this.layoutController = new MultiplexLayoutController([
+			this.firstLayoutController,
+			...(options.layoutController ? [options.layoutController] : [])
+		]);
+
+		this.root = new BranchNode(Orientation.VERTICAL, this.layoutController, this.styles, this.proportionalLayout);
+	}
+
+	getViewMap(map: Map<IView, HTMLElement>, node?: Node): void {
+		if (!node) {
+			node = this.root;
+		}
+
+		if (node instanceof BranchNode) {
+			node.children.forEach(child => this.getViewMap(map, child));
+		} else {
+			map.set(node.view, node.element);
+		}
 	}
 
 	style(styles: IGridViewStyles): void {
@@ -664,9 +768,10 @@ export class GridView implements IDisposable {
 	}
 
 	layout(width: number, height: number): void {
+		this.firstLayoutController.isLayoutEnabled = true;
+
 		const [size, orthogonalSize] = this.root.orientation === Orientation.HORIZONTAL ? [height, width] : [width, height];
-		this.root.layout(size);
-		this.root.orthogonalLayout(orthogonalSize);
+		this.root.layout(size, orthogonalSize);
 	}
 
 	addView(view: IView, size: number | Sizing, location: number[]): void {
@@ -693,9 +798,8 @@ export class GridView implements IDisposable {
 
 			grandParent.removeChild(parentIndex);
 
-			const newParent = new BranchNode(parent.orientation, this.styles, this.proportionalLayout, parent.size, parent.orthogonalSize);
+			const newParent = new BranchNode(parent.orientation, parent.layoutController, this.styles, this.proportionalLayout, parent.size, parent.orthogonalSize);
 			grandParent.addChild(newParent, parent.size, parentIndex);
-			newParent.orthogonalLayout(parent.orthogonalSize);
 
 			const newSibling = new LeafNode(parent.view, grandParent.orientation, this.layoutController, parent.size);
 			newParent.addChild(newSibling, newSiblingSize, 0);
@@ -826,9 +930,6 @@ export class GridView implements IDisposable {
 
 			fromParent.addChild(toNode, fromSize, fromIndex);
 			toParent.addChild(fromNode, toSize, toIndex);
-
-			fromParent.layout(fromParent.orthogonalSize);
-			toParent.layout(toParent.orthogonalSize);
 		}
 	}
 
@@ -932,6 +1033,47 @@ export class GridView implements IDisposable {
 	getView(location?: number[]): GridNode {
 		const node = location ? this.getNode(location)[1] : this._root;
 		return this._getViews(node, this.orientation, { top: 0, left: 0, width: this.width, height: this.height });
+	}
+
+	static deserialize<T extends ISerializableView>(json: ISerializedGridView, deserializer: IViewDeserializer<T>, options: IGridViewOptions = {}): GridView {
+		if (typeof json.orientation !== 'number') {
+			throw new Error('Invalid JSON: \'orientation\' property must be a number.');
+		} else if (typeof json.width !== 'number') {
+			throw new Error('Invalid JSON: \'width\' property must be a number.');
+		} else if (typeof json.height !== 'number') {
+			throw new Error('Invalid JSON: \'height\' property must be a number.');
+		}
+
+		const orientation = json.orientation;
+		const height = json.height;
+
+		const result = new GridView(options);
+		result._deserialize(json.root as ISerializedBranchNode, orientation, deserializer, height);
+
+		return result;
+	}
+
+	private _deserialize(root: ISerializedBranchNode, orientation: Orientation, deserializer: IViewDeserializer<ISerializableView>, orthogonalSize: number): void {
+		this.root = this._deserializeNode(root, orientation, deserializer, orthogonalSize) as BranchNode;
+	}
+
+	private _deserializeNode(node: ISerializedNode, orientation: Orientation, deserializer: IViewDeserializer<ISerializableView>, orthogonalSize: number): Node {
+		let result: Node;
+		if (node.type === 'branch') {
+			const serializedChildren = node.data as ISerializedNode[];
+			const children = serializedChildren.map(serializedChild => {
+				return {
+					node: this._deserializeNode(serializedChild, orthogonal(orientation), deserializer, node.size),
+					visible: (serializedChild as { visible?: boolean }).visible
+				} as INodeDescriptor;
+			});
+
+			result = new BranchNode(orientation, this.layoutController, this.styles, this.proportionalLayout, node.size, orthogonalSize, children);
+		} else {
+			result = new LeafNode(deserializer.fromJSON(node.data), orientation, this.layoutController, orthogonalSize, node.size);
+		}
+
+		return result;
 	}
 
 	private _getViews(node: Node, orientation: Orientation, box: Box, cachedVisibleSize?: number): GridNode {
