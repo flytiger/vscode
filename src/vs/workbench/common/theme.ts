@@ -14,11 +14,11 @@ import { Color } from 'vs/base/common/color';
 export function WORKBENCH_BACKGROUND(theme: ITheme): Color {
 	switch (theme.type) {
 		case 'dark':
-			return Color.fromHex('#25252600');
+			return Color.fromHex('#25252690');
 		case 'light':
-			return Color.fromHex('#F3F3F300');
+			return Color.fromHex('#F3F3F390');
 		default:
-			return Color.fromHex('#00000000');
+			return Color.fromHex('#00000090');
 	}
 }
 
