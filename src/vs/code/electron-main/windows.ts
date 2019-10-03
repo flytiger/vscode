@@ -25,7 +25,7 @@ import product from 'vs/platform/product/node/product';
 import { ITelemetryService, ITelemetryData } from 'vs/platform/telemetry/common/telemetry';
 import { IWindowsMainService, IOpenConfiguration, IWindowsCountChangedEvent, ICodeWindow, IWindowState as ISingleWindowState, WindowMode } from 'vs/platform/windows/electron-main/windows';
 import { IHistoryMainService, IRecent } from 'vs/platform/history/common/history';
-import { IProcessEnvironment, isMacintosh, isWindows } from 'vs/base/common/platform';
+import { IProcessEnvironment, isMacintosh, isWindows, isLinux } from 'vs/base/common/platform';
 import { IWorkspacesMainService, IWorkspaceIdentifier, WORKSPACE_FILTER, isSingleFolderWorkspaceIdentifier, hasWorkspaceFileExtension } from 'vs/platform/workspaces/common/workspaces';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { mnemonicButtonLabel } from 'vs/base/common/labels';
@@ -379,7 +379,14 @@ export class WindowsManager extends Disposable implements IWindowsMainService {
 		};
 	}
 
+	async delay(ms: number): Promise<void> {
+		await new Promise(resolve => setTimeout(() => resolve(), ms)).then(() => { });
+	}
+
 	open(openConfig: IOpenConfiguration): ICodeWindow[] {
+		if (isLinux) {
+			this.delay(500).then(any => { });
+		}
 		this.logService.trace('windowsManager#open');
 		openConfig = this.validateOpenConfig(openConfig);
 
