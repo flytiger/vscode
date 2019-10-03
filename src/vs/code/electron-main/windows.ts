@@ -383,14 +383,14 @@ export class WindowsManager extends Disposable implements IWindowsMainService {
 		if (isLinux) {
 			setTimeout(() => {
 				this.openImpl(openConfig);
-			}, 200);
+			}, 150);
 			return [];
 		} else {
 			return this.openImpl(openConfig);
 		}
 	}
 
-	openImpl(openConfig: IOpenConfiguration): ICodeWindow[] {
+	private openImpl(openConfig: IOpenConfiguration): ICodeWindow[] {
 		this.logService.trace('windowsManager#open');
 		openConfig = this.validateOpenConfig(openConfig);
 
