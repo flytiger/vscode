@@ -379,14 +379,18 @@ export class WindowsManager extends Disposable implements IWindowsMainService {
 		};
 	}
 
-	async delay(ms: number): Promise<void> {
-		await new Promise(resolve => setTimeout(() => resolve(), ms)).then(() => { });
-	}
-
 	open(openConfig: IOpenConfiguration): ICodeWindow[] {
 		if (isLinux) {
-			this.delay(500).then(any => { });
+			setTimeout(() => {
+				this.openImpl(openConfig);
+			}, 200);
+			return [];
+		} else {
+			return this.openImpl(openConfig);
 		}
+	}
+
+	openImpl(openConfig: IOpenConfiguration): ICodeWindow[] {
 		this.logService.trace('windowsManager#open');
 		openConfig = this.validateOpenConfig(openConfig);
 
