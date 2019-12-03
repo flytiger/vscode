@@ -25,7 +25,7 @@
 		"editor.selectionBackground": "#878b9180",
 		"editor.wordHighlightBackground": "#4a4a7680",
 		"editor.wordHighlightStrongBackground": "#6a6a9680",
-		"editor.lineHighlightBackground": "#8d8b7530",
+		"editor.lineHighlightBackground": "#3e3d3230",
 		"editorLineNumber.activeForeground": "#c2c2bf",
 		"editorCursor.foreground": "#f8f8f0",
 		"editorWhitespace.foreground": "#464741",
@@ -64,7 +64,7 @@
 		"focusBorder": "#75715E",
 		"editorWidget.background": "#1e1f1c30",
 		"debugToolBar.background": "#1e1f1c",
-		"diffEditor.insertedTextBackground": "#66852880", // middle of #272822 and #a6e22e
+		"diffEditor.insertedTextBackground": "#4b661680", // middle of #272822 and #a6e22e
 		"diffEditor.removedTextBackground": "#90274A80", // middle of #272822 and #f92672
 		"inputValidation.errorBackground": "#90274A", // middle of #272822 and #f92672
 		"inputValidation.errorBorder": "#f92672",
@@ -122,7 +122,7 @@
 			"name": "Comment",
 			"scope": "comment",
 			"settings": {
-				"foreground": "#c5be9d"
+				"foreground": "#88846f"
 			}
 		},
 		{
@@ -286,7 +286,6 @@
 			"name": "Invalid",
 			"scope": "invalid",
 			"settings": {
-				"background": "#F92672",
 				"fontStyle": "",
 				"foreground": "#F8F8F0"
 			}
@@ -295,7 +294,6 @@
 			"name": "Invalid deprecated",
 			"scope": "invalid.deprecated",
 			"settings": {
-				"background": "#AE81FF",
 				"foreground": "#F8F8F0"
 			}
 		},
