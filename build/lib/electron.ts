@@ -97,7 +97,7 @@ function getElectron(arch: string): () => NodeJS.ReadWriteStream {
 			arch,
 			ffmpegChromium: true,
 			keepDefaultApp: true,
-			enableTransparentVisuals: true
+			enableTransparentVisuals:  true
 		});
 
 		return vfs.src('package.json')

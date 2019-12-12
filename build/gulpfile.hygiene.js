@@ -242,8 +242,8 @@ function hygiene(some) {
 		const product = JSON.parse(file.contents.toString('utf8'));
 
 		if (product.extensionsGallery) {
-			console.error('product.json: Contains "extensionsGallery"');
-			errorCount++;
+			console.warn('product.json: Contains "extensionsGallery"');
+			//errorCount++;
 		}
 
 		this.emit('data', file);

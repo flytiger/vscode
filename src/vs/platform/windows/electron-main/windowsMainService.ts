@@ -389,7 +389,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		if (isLinux) {
 			setTimeout(() => {
 				this.openImpl(openConfig);
-			}, 300);
+			}, 200);
 			return [];
 		} else {
 			return this.openImpl(openConfig);
