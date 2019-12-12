@@ -31,6 +31,7 @@ import { IFileService } from 'vs/platform/files/common/files';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IDialogMainService } from 'vs/platform/dialogs/electron-main/dialogs';
 import { mnemonicButtonLabel } from 'vs/base/common/labels';
+import { ThemeIcon } from 'vs/platform/theme/common/themeService';
 
 const RUN_TEXTMATE_IN_WORKER = false;
 
@@ -450,15 +451,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
 		// Inject headers when requests are incoming
 		const urls = ['https://marketplace.visualstudio.com/*', 'https://*.vsassets.io/*'];
-		this._win.webContents.session.webRequest.onBeforeSendHeaders({ urls }, (details, cb) => {
-			this.marketplaceHeadersPromise.then(headers => {
-				const requestHeaders = objects.assign(details.requestHeaders, headers) as { [key: string]: string | undefined };
-				if (!this.configurationService.getValue('extensions.disableExperimentalAzureSearch')) {
-					requestHeaders['Cookie'] = `${requestHeaders['Cookie'] ? requestHeaders['Cookie'] + ';' : ''}EnableExternalSearchForVSCode=true`;
-				}
-				cb({ cancel: false, requestHeaders });
-			});
-		});
+		this._win.webContents.session.webRequest.onBeforeSendHeaders({ urls }, (details, cb) =>
+			this.marketplaceHeadersPromise.then(headers => cb({ cancel: false, requestHeaders: objects.assign(details.requestHeaders, headers) as { [key: string]: string | undefined } })));
 	}
 
 	private onWindowError(error: WindowError): void {
@@ -1108,8 +1102,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 	private createTouchBarGroupSegments(items: ISerializableCommandAction[] = []): ITouchBarSegment[] {
 		const segments: ITouchBarSegment[] = items.map(item => {
 			let icon: NativeImage | undefined;
-			if (item.iconLocation && item.iconLocation.dark.scheme === 'file') {
-				icon = nativeImage.createFromPath(URI.revive(item.iconLocation.dark).fsPath);
+			if (item.icon && !ThemeIcon.isThemeIcon(item.icon) && item.icon?.dark?.scheme === 'file') {
+				icon = nativeImage.createFromPath(URI.revive(item.icon.dark).fsPath);
 				if (icon.isEmpty()) {
 					icon = undefined;
 				}

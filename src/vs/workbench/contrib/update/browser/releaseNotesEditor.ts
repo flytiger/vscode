@@ -81,13 +81,11 @@ export class ReleaseNotesManager {
 				{
 					tryRestoreScrollPosition: true,
 					enableFindWidget: true,
-					localResourceRoots: [
-						URI.parse(require.toUrl('./media'))
-					]
+					localResourceRoots: []
 				},
 				undefined);
 
-			this._currentReleaseNotes.webview.onDidClickLink(uri => this.onDidClickLink(uri));
+			this._currentReleaseNotes.webview.onDidClickLink(uri => this.onDidClickLink(URI.parse(uri)));
 			this._currentReleaseNotes.onDispose(() => { this._currentReleaseNotes = undefined; });
 
 			const iconPath = URI.parse(require.toUrl('./media/code-icon.svg'));
@@ -192,6 +190,8 @@ export class ReleaseNotesManager {
 					body {
 						padding: 10px 20px;
 						line-height: 22px;
+						max-width: 780px;
+						margin: 0 auto;
 					}
 
 					img {
@@ -231,7 +231,6 @@ export class ReleaseNotesManager {
 					h1, h2, h3 {
 						font-weight: normal;
 					}
-
 
 					table {
 						border-collapse: collapse;

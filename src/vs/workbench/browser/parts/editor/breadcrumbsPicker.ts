@@ -379,7 +379,10 @@ export class BreadcrumbsFilePicker extends BreadcrumbsPicker {
 			sorter: new FileSorter(),
 			filter: this._instantiationService.createInstance(FileFilter),
 			identityProvider: new FileIdentityProvider(),
-			keyboardNavigationLabelProvider: new FileNavigationLabelProvider()
+			keyboardNavigationLabelProvider: new FileNavigationLabelProvider(),
+			overrideStyles: {
+				listBackground: breadcrumbsPickerBackground
+			}
 		});
 	}
 
@@ -468,14 +471,10 @@ export class BreadcrumbsOutlinePicker extends BreadcrumbsPicker {
 		const tree = this._tree as WorkbenchDataTree<OutlineModel, any, FuzzyScore>;
 		tree.setInput(model);
 
-		let focusElement: TreeElement;
-		if (element === model) {
-			focusElement = tree.navigate().first();
-		} else {
-			focusElement = element;
+		if (element !== model) {
+			tree.reveal(element, 0.5);
+			tree.setFocus([element], this._fakeEvent);
 		}
-		tree.reveal(focusElement, 0.5);
-		tree.setFocus([focusElement], this._fakeEvent);
 		tree.domFocus();
 
 		return Promise.resolve();

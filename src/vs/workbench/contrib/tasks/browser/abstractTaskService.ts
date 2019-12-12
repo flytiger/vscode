@@ -699,7 +699,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 		});
 	}
 
-	public run(task: Task | undefined, options?: ProblemMatcherRunOptions, runSource: TaskRunSource = TaskRunSource.System): Promise<ITaskSummary> {
+	public run(task: Task | undefined, options?: ProblemMatcherRunOptions, runSource: TaskRunSource = TaskRunSource.System): Promise<ITaskSummary | undefined> {
 		if (!task) {
 			throw new TaskError(Severity.Info, nls.localize('TaskServer.noTask', 'Task to execute is undefined'), TaskErrors.TaskNotFound);
 		}
@@ -1234,7 +1234,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 
 	private executeTask(task: Task, resolver: ITaskResolver): Promise<ITaskSummary> {
 		return ProblemMatcherRegistry.onReady().then(() => {
-			return this.textFileService.saveAll().then((value) => { // make sure all dirty files are saved
+			return this.editorService.saveAll().then((value) => { // make sure all dirty editors are saved
 				let executeResult = this.getTaskSystem().run(task, resolver);
 				return this.handleExecuteResult(executeResult);
 			});
@@ -1362,7 +1362,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 	}
 
 	private getGroupedTasks(type?: string): Promise<TaskMap> {
-		return Promise.all([this.extensionService.activateByEvent('onCommand:workbench.action.tasks.runTask'), TaskDefinitionRegistry.onReady()]).then(() => {
+		return Promise.all([this.extensionService.activateByEvent('onCommand:workbench.action.tasks.runTask'), this.extensionService.whenInstalledExtensionsRegistered()]).then(() => {
 			let validTypes: IStringDictionary<boolean> = Object.create(null);
 			TaskDefinitionRegistry.all().forEach(definition => validTypes[definition.taskType] = true);
 			validTypes['shell'] = true;
@@ -2033,10 +2033,10 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 			}
 		});
 
-		const timeout: boolean = await Promise.race([new Promise(async (resolve) => {
+		const timeout: boolean = await Promise.race([new Promise<boolean>(async (resolve) => {
 			await _createEntries;
 			resolve(false);
-		}), new Promise((resolve) => {
+		}), new Promise<boolean>((resolve) => {
 			const timer = setTimeout(() => {
 				clearTimeout(timer);
 				resolve(true);
@@ -2164,7 +2164,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 		}
 
 		ProblemMatcherRegistry.onReady().then(() => {
-			return this.textFileService.saveAll().then((value) => { // make sure all dirty files are saved
+			return this.editorService.saveAll().then((value) => { // make sure all dirty editors are saved
 				let executeResult = this.getTaskSystem().rerun();
 				if (executeResult) {
 					return this.handleExecuteResult(executeResult);
@@ -2560,10 +2560,10 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
 			});
 		});
 
-		const timeout: boolean = await Promise.race([new Promise(async (resolve) => {
+		const timeout: boolean = await Promise.race([new Promise<boolean>(async (resolve) => {
 			await entries;
 			resolve(false);
-		}), new Promise((resolve) => {
+		}), new Promise<boolean>((resolve) => {
 			const timer = setTimeout(() => {
 				clearTimeout(timer);
 				resolve(true);

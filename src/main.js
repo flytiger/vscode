@@ -150,10 +150,8 @@ function configureCommandlineSwitchesSync(cliArgs) {
 			} else if (argvKey === 'disable-color-correct-rendering') {
 				app.commandLine.appendSwitch('disable-color-correct-rendering'); // needs to be called exactly like this (https://github.com/microsoft/vscode/issues/84154)
 			} else {
-				app.commandLine.appendArgument(argvKey);
+				app.commandLine.appendSwitch(argvKey);
 			}
-		} else {
-			app.commandLine.appendSwitch(argvKey, argvValue);
 		}
 	});
 
