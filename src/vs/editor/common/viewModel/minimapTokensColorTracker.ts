@@ -44,6 +44,7 @@ export class MinimapTokensColorTracker {
 			// Use a VM friendly data-type
 			this._colors[colorId] = new RGBA8(source.r, source.g, source.b, Math.round(source.a * 255));
 		}
+		colorMap[ColorId.DefaultBackground] = colorMap[ColorId.DefaultBackground].transparent(0);
 		let backgroundLuminosity = colorMap[ColorId.DefaultBackground].getRelativeLuminance();
 		this._backgroundIsLight = backgroundLuminosity >= 0.5;
 		this._onDidChange.fire(undefined);

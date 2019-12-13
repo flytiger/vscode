@@ -68,7 +68,7 @@ export class MinimapCharRenderer {
 				dest[column++] = backgroundR + deltaR * c;
 				dest[column++] = backgroundG + deltaG * c;
 				dest[column++] = backgroundB + deltaB * c;
-				dest[column++] = backgroundB + deltaA * c;
+				dest[column++] = backgroundA + deltaA * c;
 			}
 
 			row += destWidth;
