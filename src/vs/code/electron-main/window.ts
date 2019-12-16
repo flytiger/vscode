@@ -199,6 +199,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 					});
 				}
 			}
+			this._win.setBounds({
+				width: this.windowState.width || defaultWindowState().width!,
+				height: this.windowState.height || defaultWindowState().height!,
+				x: this.windowState.x || 0,
+				y: this.windowState.y || 0
+			});
 
 			if (isFullscreenOrMaximized) {
 				this._win.maximize();
