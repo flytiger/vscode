@@ -24,7 +24,7 @@ import { FileKind } from 'vs/platform/files/common/files';
 import { withNullAsUndefined } from 'vs/base/common/types';
 import { OutlineFilter } from 'vs/editor/contrib/documentSymbols/outlineTree';
 import { ITextModel } from 'vs/editor/common/model';
-import { ITextResourceConfigurationService } from 'vs/editor/common/services/resourceConfiguration';
+import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService';
 
 export class FileElement {
 	constructor(
@@ -71,7 +71,9 @@ export class EditorBreadcrumbsModel {
 	dispose(): void {
 		this._cfgFilePath.dispose();
 		this._cfgSymbolPath.dispose();
+		this._outlineDisposables.dispose();
 		this._disposables.dispose();
+		this._onDidUpdate.dispose();
 	}
 
 	isRelative(): boolean {
@@ -192,13 +194,16 @@ export class EditorBreadcrumbsModel {
 
 		this._outlineDisposables.add({
 			dispose: () => {
-				source.cancel();
-				source.dispose();
+				source.dispose(true);
 				timeout.dispose();
 			}
 		});
 
 		OutlineModel.create(buffer, source.token).then(model => {
+			if (source.token.isCancellationRequested) {
+				// cancelled -> do nothing
+				return;
+			}
 			if (TreeElement.empty(model)) {
 				// empty -> no outline elements
 				this._updateOutlineElements([]);

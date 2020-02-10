@@ -175,7 +175,8 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				horizontal: 'auto',
 				useShadows: true,
 				verticalHasArrows: false,
-				horizontalHasArrows: false
+				horizontalHasArrows: false,
+				alwaysConsumeMouseWheel: false
 			},
 			overviewRulerLanes: 2,
 			fixedOverflowWidgets: true,
@@ -382,7 +383,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		} else {
 			this._parent.dataset['state'] = State.Data;
-			if (!viewState) {
+			if (!viewState || this._tree.getFocus().length === 0) {
 				this._tree.setFocus([root.children[0].element]);
 			}
 			this._tree.domFocus();

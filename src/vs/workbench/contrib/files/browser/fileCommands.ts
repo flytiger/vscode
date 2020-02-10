@@ -5,14 +5,14 @@
 
 import * as nls from 'vs/nls';
 import { URI } from 'vs/base/common/uri';
-import { toResource, IEditorCommandsContext, SideBySideEditor, IEditorIdentifier, SaveReason, SideBySideEditorInput } from 'vs/workbench/common/editor';
+import { toResource, IEditorCommandsContext, SideBySideEditor, IEditorIdentifier, SaveReason, SideBySideEditorInput, EditorsOrder } from 'vs/workbench/common/editor';
 import { IWindowOpenable, IOpenWindowOptions, isWorkspaceToOpen, IOpenEmptyWindowOptions } from 'vs/platform/windows/common/windows';
 import { IHostService } from 'vs/workbench/services/host/browser/host';
 import { ServicesAccessor, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { ExplorerFocusCondition, TextFileContentProvider, VIEWLET_ID, IExplorerService, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext, ExplorerCompressedLastFocusContext, FilesExplorerFocusCondition } from 'vs/workbench/contrib/files/common/files';
-import { ExplorerViewlet } from 'vs/workbench/contrib/files/browser/explorerViewlet';
+import { ExplorerViewPaneContainer } from 'vs/workbench/contrib/files/browser/explorerViewlet';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 import { toErrorMessage } from 'vs/base/common/errorMessage';
 import { IListService } from 'vs/platform/list/browser/listService';
@@ -30,7 +30,7 @@ import { Schemas } from 'vs/base/common/network';
 import { INotificationService } from 'vs/platform/notification/common/notification';
 import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
 import { IEditorService, SIDE_GROUP, ISaveEditorsOptions } from 'vs/workbench/services/editor/common/editorService';
-import { IEditorGroupsService, GroupsOrder, EditorsOrder, IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsService';
+import { IEditorGroupsService, GroupsOrder, IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsService';
 import { ILabelService } from 'vs/platform/label/common/label';
 import { basename, joinPath, isEqual } from 'vs/base/common/resources';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
@@ -200,7 +200,7 @@ CommandsRegistry.registerCommand({
 
 CommandsRegistry.registerCommand({
 	id: COMPARE_SELECTED_COMMAND_ID,
-	handler: (accessor, resource: URI | object) => {
+	handler: async (accessor, resource: URI | object) => {
 		const editorService = accessor.get(IEditorService);
 		const explorerService = accessor.get(IExplorerService);
 		const resources = getMultiSelectedResources(resource, accessor.get(IListService), editorService, explorerService);
@@ -212,7 +212,7 @@ CommandsRegistry.registerCommand({
 			});
 		}
 
-		return Promise.resolve(true);
+		return true;
 	}
 });
 
@@ -294,7 +294,7 @@ CommandsRegistry.registerCommand({
 		const explorerService = accessor.get(IExplorerService);
 		const uri = getResourceForCommand(resource, accessor.get(IListService), accessor.get(IEditorService));
 
-		const viewlet = await viewletService.openViewlet(VIEWLET_ID, false) as ExplorerViewlet;
+		const viewlet = (await viewletService.openViewlet(VIEWLET_ID, false))?.getViewPaneContainer() as ExplorerViewPaneContainer;
 
 		if (uri && contextService.isInsideWorkspace(uri)) {
 			const explorerView = viewlet.getExplorerView();
@@ -358,7 +358,7 @@ async function saveSelectedEditors(accessor: ServicesAccessor, options?: ISaveEd
 
 		// Check that the resource of the model was not saved already
 		if (resource && !editors.some(({ editor }) => isEqual(toResource(editor, { supportSideBySide: SideBySideEditor.MASTER }), resource))) {
-			const model = textFileService.models.get(resource);
+			const model = textFileService.files.get(resource);
 			if (!model?.isReadonly()) {
 				await textFileService.save(resource, options);
 			}
@@ -514,7 +514,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			return;
 		}
 
-		const explorer = viewlet as ExplorerViewlet;
+		const explorer = viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
 		const view = explorer.getExplorerView();
 		view.previousCompressedStat();
 	}
@@ -533,7 +533,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			return;
 		}
 
-		const explorer = viewlet as ExplorerViewlet;
+		const explorer = viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
 		const view = explorer.getExplorerView();
 		view.nextCompressedStat();
 	}
@@ -552,7 +552,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			return;
 		}
 
-		const explorer = viewlet as ExplorerViewlet;
+		const explorer = viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
 		const view = explorer.getExplorerView();
 		view.firstCompressedStat();
 	}
@@ -571,7 +571,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			return;
 		}
 
-		const explorer = viewlet as ExplorerViewlet;
+		const explorer = viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
 		const view = explorer.getExplorerView();
 		view.lastCompressedStat();
 	}
